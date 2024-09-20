@@ -1,10 +1,17 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import {Header} from './Header.js';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 function App() {
   const [posts, setPosts] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [tempId, setId] = useState(0);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newPrice, setNewPrice] = useState(0);
@@ -37,8 +44,14 @@ function App() {
     })
   }
 
+
+
   return (
-    <div>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      
+    <div> 
+      <Header></Header>
       <input 
         value={newTitle}
         onChange={e => setNewTitle(e.target.value)}
@@ -66,6 +79,7 @@ function App() {
         )}
       </ul>
     </div>
+    </ThemeProvider>
   );
 }
 
