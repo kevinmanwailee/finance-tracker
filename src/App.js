@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 
 function App() {
@@ -8,21 +8,21 @@ function App() {
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newPrice, setNewPrice] = useState(0);
+  const URL = 'http://127.0.0.1:9000/transactions';
+
+  let fetchData = useCallback(async () =>{
+    const res = await axios.get(URL);
+    if(res){
+      setPosts(res.data)
+    }
+  },[])
 
   useEffect(() => {
-    axios.get('transaction.json')
-    .then(response => {
-      setPosts(response.data.entries);
-      setTotal(response.data.total);
-      console.log(response.data)
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  },[]);
+    fetchData()
+  },[])
 
   function newPost(){
-    axios.put('transaction.json', {
+    axios.put(URL, {
       title: newTitle,
       category: newCategory,
       price: newPrice
@@ -30,7 +30,7 @@ function App() {
   }
 
   function deletePost(){
-    axios.delete('transaction.json')
+    axios.delete(URL)
     .then(() => {
       alert("Deleted!");
       setPosts(null);
