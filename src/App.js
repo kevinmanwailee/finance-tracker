@@ -1,14 +1,8 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import {Header} from './Header.js';
+import { PermanentSidebar } from './PermanentSidebar.js';
+import { Header } from './Header.js';
 
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -44,42 +38,42 @@ function App() {
     })
   }
 
+  const colWidth = { xs: 12, sm: 6, md: 4, lg: 3 };  return (
+    <div style={{ display:"flex", alignItems:"stretch"}}> 
+      <div id="Sidebar">
+        <PermanentSidebar/>
+      </div>
+      <div id="Content" style={{ flexGrow: 4 }}>
+        <Header/>
 
+        <input 
+          value={newTitle}
+          onChange={e => setNewTitle(e.target.value)}
+          placeholder="New Title"
+        />
+        <input 
+          value={newCategory}
+          onChange={e => setNewCategory(e.target.value)}
+          placeholder="New Category"
+        />
+        <input 
+          value={newPrice}
+          onChange={e => setNewPrice(parseFloat(e.target.value))}
+        />
+        <button onClick={newPost}>New Post</button>
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      
-    <div> 
-      <Header></Header>
-      <input 
-        value={newTitle}
-        onChange={e => setNewTitle(e.target.value)}
-        placeholder="New Title"
-      />
-      <input 
-        value={newCategory}
-        onChange={e => setNewCategory(e.target.value)}
-        placeholder="New Category"
-      />
-      <input 
-        value={newPrice}
-        onChange={e => setNewPrice(parseFloat(e.target.value))}
-      />
-      <button onClick={newPost}>New Post</button>
+        <ul>
 
-      <ul>
-
-        {posts.map(post =>
-          <div key={post.id}>
-            <h1 >{post.title}</h1>
-            <p>{post.category}</p>
-            <p>${post.price.toFixed(2)}</p>
-          </div>
-        )}
-      </ul>
+          {posts.map(post =>
+            <div key={post.id}>
+              <h1 >{post.title}</h1>
+              <p>{post.category}</p>
+              <p>${post.price.toFixed(2)}</p>
+            </div>
+          )}
+        </ul>
+      </div>
     </div>
-    </ThemeProvider>
   );
 }
 
