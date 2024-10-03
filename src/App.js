@@ -2,6 +2,100 @@ import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 import { PermanentSidebar } from './PermanentSidebar.js';
 import { Header } from './Header.js';
+import { Stack } from '@mui/material';
+import { Button, TextField, MenuItem } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+
+function NewTransaction() {
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const categories = [
+    {
+      value:'Income',
+    },
+    {
+      value:'Food',
+    },
+    {
+      value:"Recreaction",
+    },
+  ]
+
+  return (
+    <React.Fragment>
+      <Button variant="contained" onClick={handleClickOpen}>
+        Add Transaction
+      </Button>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          component: 'form',
+          onSubmit: (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const formJson = Object.fromEntries(formData.entries());
+            console.log(formJson);
+            handleClose();
+          },
+        }}
+      >
+        <DialogTitle>Add new transaction</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Test
+          </DialogContentText>
+          <Stack>
+            <Stack sx={{ flexDirection:"row", paddingBottom:"30px" }}>
+              <TextField
+                autoFocus
+                required
+                id="title"
+                name="title"
+                label="Name"
+                sx={{ paddingRight:"20px" }}
+              />
+              <TextField
+                required
+                id="price"
+                name="price"
+                label="Price"
+                type="number"
+                defaultValue="0.00"
+                />
+            </Stack>
+            <TextField
+              select
+              required
+              id="category"
+              name="category"
+              label="Category"
+              defaultValue="Income"
+            >
+              {categories.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.value}
+                </MenuItem>
+              ))}
+            </TextField>
+      </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button type="submit">Submit</Button>
+        </DialogActions>
+      </Dialog>
+    </React.Fragment>
+  );
+}
 
 
 function App() {
@@ -43,36 +137,26 @@ function App() {
       <div id="Sidebar">
         <PermanentSidebar/>
       </div>
-      <div id="Content" style={{ flexGrow: 4 }}>
+      <Stack sx={{ display:"flex", flexGrow: 4, flexDirection:"column" }}>
         <Header/>
-
-        <input 
-          value={newTitle}
-          onChange={e => setNewTitle(e.target.value)}
-          placeholder="New Title"
-        />
-        <input 
-          value={newCategory}
-          onChange={e => setNewCategory(e.target.value)}
-          placeholder="New Category"
-        />
-        <input 
-          value={newPrice}
-          onChange={e => setNewPrice(parseFloat(e.target.value))}
-        />
-        <button onClick={newPost}>New Post</button>
-
-        <ul>
-
-          {posts.map(post =>
-            <div key={post.id}>
-              <h1 >{post.title}</h1>
-              <p>{post.category}</p>
-              <p>${post.price.toFixed(2)}</p>
+        <Stack>
+          <Stack sx={{ alignItems:"center"}}>
+            <div>
+              <NewTransaction/>
             </div>
-          )}
-        </ul>
-      </div>
+          </Stack>
+          <ul>
+            {posts.map(post =>
+              <div key={post.id}>
+                <h1 >{post.title}</h1>
+                <p>{post.category}</p>
+                <p>${post.price.toFixed(2)}</p>
+              </div>
+            )}
+          </ul>
+        </Stack>
+
+      </Stack>
     </div>
   );
 }
