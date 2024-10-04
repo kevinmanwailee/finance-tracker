@@ -1,12 +1,13 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
+import dayjs from 'dayjs';
 import { PermanentSidebar } from './PermanentSidebar.js';
 import { Header } from './Header.js';
 import { Stack } from '@mui/material';
 import { Button, TextField, MenuItem } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
-function NewTransaction() {
+function NewTransaction(props) {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -43,7 +44,7 @@ function NewTransaction() {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
-            console.log(formJson);
+            props.newPost(formJson);
             handleClose();
           },
         }}
@@ -54,15 +55,16 @@ function NewTransaction() {
             Test
           </DialogContentText>
           <Stack>
-            <Stack sx={{ flexDirection:"row", paddingBottom:"30px" }}>
+            <Stack sx={{ paddingBottom:"30px" }}>
               <TextField
                 autoFocus
                 required
                 id="title"
                 name="title"
                 label="Name"
-                sx={{ paddingRight:"20px" }}
               />
+            </Stack>
+            <Stack sx={{ flexDirection:"row", paddingBottom:"30px" }}>
               <TextField
                 required
                 id="price"
@@ -70,23 +72,32 @@ function NewTransaction() {
                 label="Price"
                 type="number"
                 defaultValue="0.00"
+                sx={{ paddingRight:"30px" }}
                 />
+              <TextField
+                required
+                id="date"
+                name="date"
+                type="date"
+              />
             </Stack>
-            <TextField
-              select
-              required
-              id="category"
-              name="category"
-              label="Category"
-              defaultValue="Income"
-            >
-              {categories.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.value}
-                </MenuItem>
-              ))}
-            </TextField>
-      </Stack>
+            <Stack>
+              <TextField
+                select
+                required
+                id="category"
+                name="category"
+                label="Category"
+                defaultValue="Income"
+              >
+                {categories.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.value}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
@@ -100,13 +111,13 @@ function NewTransaction() {
 
 function App() {
   const [posts, setPosts] = useState([]);
-  const [newTitle, setNewTitle] = useState("");
-  const [newCategory, setNewCategory] = useState("");
-  const [newPrice, setNewPrice] = useState(0);
-  const URL = 'http://127.0.0.1:9000/transactions';
+  const [update, setUpdate] = useState(false);
+
+  const URL = 'http://127.0.0.1:9000/';
 
   let fetchData = useCallback(async () =>{
-    const res = await axios.get(URL);
+    setUpdate(false)
+    const res = await axios.get(URL+"transactions");
     if(res){
       setPosts(res.data)
     }
@@ -114,25 +125,21 @@ function App() {
 
   useEffect(() => {
     fetchData()
-  },[])
+  },[update])
 
-  function newPost(){
-    axios.put(URL, {
-      title: newTitle,
-      category: newCategory,
-      price: newPrice
+  function newPost(jsonObj){
+    console.log("Sending: " + jsonObj)
+    axios.put(URL+"AddTransaction/", jsonObj)
+      .then((response) => {
+        console.log(response.data)
+        setUpdate(true)
     })
+      .catch((error) => {
+        console.log(error)
+      })
   }
 
-  function deletePost(){
-    axios.delete(URL)
-    .then(() => {
-      alert("Deleted!");
-      setPosts(null);
-    })
-  }
-
-  const colWidth = { xs: 12, sm: 6, md: 4, lg: 3 };  return (
+  return (
     <div style={{ display:"flex", alignItems:"stretch"}}> 
       <div id="Sidebar">
         <PermanentSidebar/>
@@ -142,7 +149,7 @@ function App() {
         <Stack>
           <Stack sx={{ alignItems:"center"}}>
             <div>
-              <NewTransaction/>
+              <NewTransaction newPost={newPost}/>
             </div>
           </Stack>
           <ul>
@@ -150,7 +157,7 @@ function App() {
               <div key={post.id}>
                 <h1 >{post.title}</h1>
                 <p>{post.category}</p>
-                <p>${post.price.toFixed(2)}</p>
+                <p>${post.price}</p>
               </div>
             )}
           </ul>
