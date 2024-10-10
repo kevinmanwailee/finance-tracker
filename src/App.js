@@ -10,6 +10,8 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { List, Box, ListItem, ListItemText } from '@mui/material';
+import  Grid from '@mui/material/Grid2';
 
 function NewTransaction(props) {
   const [open, setOpen] = React.useState(false);
@@ -48,6 +50,7 @@ function NewTransaction(props) {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
+            console.log(formData);
             props.newPost(formJson);
             handleClose();
           },
@@ -80,7 +83,11 @@ function NewTransaction(props) {
               />
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={['DatePicker', 'DatePicker']}>
-                  <DatePicker label="Date" defaultValue={dayjs()}/>
+                  <DatePicker 
+                    label="Date" 
+                    id="date"
+                    name="date"
+                    defaultValue={dayjs()}/>
                 </DemoContainer>
               </LocalizationProvider>
             </Stack>
@@ -128,7 +135,6 @@ function App() {
   },[])
 
   function newPost(jsonObj){
-    console.log("Sending: " + jsonObj)
     axios.put(URL+"AddTransaction/", jsonObj)
       .then((response) => {
         console.log(response.data)
@@ -152,17 +158,39 @@ function App() {
               <NewTransaction newPost={newPost}/>
             </div>
           </Stack>
-          <ul>
-            {posts.map(post =>
-              <div key={post.id}>
-                <h1 >{post.title}</h1>
-                <p>{post.category}</p>
-                <p>${post.price}</p>
-              </div>
-            )}
-          </ul>
+          <Stack sx={{ padding:"30px"}}>
+            <Grid 
+              container 
+              spacing={4}
+              sx={{ 
+                '--Grid-borderWidth': '1px',
+                border: 'var(--Grid-borderWidth) solid',
+                borderColor: 'divider'
+               }}
+              >
+              <Grid size={12}>
+                  <List dense>
+                    {posts.map(post =>
+                      <ListItem>
+                        <Grid size={2}>
+                          <ListItemText size>{post.date}</ListItemText>
+                        </Grid>
+                        <Grid size={6}>
+                          <ListItemText>{post.title}</ListItemText>
+                        </Grid>
+                        <Grid size={3}>
+                          <ListItemText>{post.category}</ListItemText>
+                        </Grid>
+                        <Grid size={1}>
+                          <ListItemText>{"$"+Number(post.price).toFixed(2)}</ListItemText>
+                        </Grid>
+                      </ListItem>
+                    )}
+                  </List>
+              </Grid>
+            </Grid>
+          </Stack>
         </Stack>
-
       </Stack>
     </div>
   );

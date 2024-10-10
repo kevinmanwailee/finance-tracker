@@ -1,3 +1,4 @@
+
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -40,7 +41,7 @@ app.get('/', function(req, res, next){
 
 // GET ALL
 app.get('/transactions', async(req,res)=>{
-    const result = await db.find().toArray();
+    const result = await db.find().sort({date: -1}).toArray();
     res.send(result);
 })
 
@@ -57,6 +58,23 @@ app.get('/transactions/title/:title', async(req,res)=>{
     const result = await db.find({"title":title}).toArray();
     res.send(result);
 })
+
+// GET ALL - month/year
+app.get('/transactions/dateMY/:month/:year', async(req,res)=>{
+    let searchDate = req.params.month + "/" + req.params.year;
+    const result = await db.find().toArray();
+
+    for(let i = 0; i < result.length; i++){
+        let currDate = (result[i].date);
+        currDate = currDate.substring(0, 3) + currDate.substring(6, currDate.length);
+        if(currDate != searchDate){
+            result.splice(i, 1)
+            i--; // fix index after removing element from array
+        }
+    }
+
+    res.send(result);
+}) 
 
 // PUT - Add post 
 app.put('/AddTransaction/', async(req,res)=>{
