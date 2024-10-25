@@ -10,11 +10,13 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { List, Box, ListItem, ListItemText } from '@mui/material';
+import { List, ListItem, ListItemText } from '@mui/material';
 import  Grid from '@mui/material/Grid2';
 
+// TODO: Make Delete button functionality
+
 function NewTransaction(props) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -23,6 +25,7 @@ function NewTransaction(props) {
   const handleClose = () => {
     setOpen(false);
   };
+
 
   const categories = [
     {
@@ -121,6 +124,7 @@ function NewTransaction(props) {
 
 function App() {
   const [posts, setPosts] = useState([]);
+
   const URL = 'http://127.0.0.1:9000/';
 
   let fetchData = useCallback(async () =>{
@@ -131,11 +135,23 @@ function App() {
   },[])
 
   useEffect(() => {
-    fetchData()
+    fetchData();
   },[])
 
-  function newPost(jsonObj){
-    axios.put(URL+"AddTransaction/", jsonObj)
+  async function deletePost(id){
+    console.log(URL+"Delete/"+id);
+    await axios.delete(URL+"Delete/"+id)
+    .then((response) => {
+      console.log(response.data)
+      fetchData();
+      })
+      .catch((error) =>{
+        console.log(error)
+      })
+  }
+
+  async function newPost(jsonObj){
+    await axios.put(URL+"AddTransaction/", jsonObj)
       .then((response) => {
         console.log(response.data)
         fetchData()
@@ -168,21 +184,26 @@ function App() {
                 borderColor: 'divider'
                }}
               >
-              <Grid size={12}>
+              <Grid key="Transaction List" size={12}>
                   <List dense>
                     {posts.map(post =>
-                      <ListItem>
-                        <Grid size={2}>
-                          <ListItemText size>{post.date}</ListItemText>
+                      <ListItem key={post._id}>
+                        <Grid size={2.5}>
+                          <ListItemText>{post.date}</ListItemText>
                         </Grid>
-                        <Grid size={6}>
+                        <Grid size={3}>
                           <ListItemText>{post.title}</ListItemText>
                         </Grid>
                         <Grid size={3}>
                           <ListItemText>{post.category}</ListItemText>
                         </Grid>
-                        <Grid size={1}>
+                        <Grid size={2}>
                           <ListItemText>{"$"+Number(post.price).toFixed(2)}</ListItemText>
+                        </Grid>
+                        <Grid size={1}>
+                          <Button variant="contained" onClick={() => deletePost(post._id)}>
+                            Delete
+                          </Button>
                         </Grid>
                       </ListItem>
                     )}

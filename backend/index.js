@@ -2,7 +2,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const {MongoClient} = require('mongodb');
+const { ObjectId, MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 
 const port = 9000;
@@ -43,12 +43,13 @@ app.get('/', function(req, res, next){
 app.get('/transactions', async(req,res)=>{
     const result = await db.find().sort({date: -1}).toArray();
     res.send(result);
+    console.log("GET ALL called");
 })
 
 // GET ONE - id
 app.get('/transactions/id/:id', async(req,res)=>{
-    let id = Number(req.params.id);
-    const result = await db.find({"id":id}).toArray();
+    let id = req.params.id;
+    const result = await db.find(new ObjectId(id)).toArray();
     res.send(result);
 })
 
@@ -83,6 +84,19 @@ app.put('/AddTransaction/', async(req,res)=>{
         console.log(req.body);
         res.send(result);
     } catch(err){
+        console.error(err);
+    }
+})
+
+// DELETE - Delete post
+app.delete('/Delete/:id', async(req,res)=>{
+    let id =  req.params.id;
+    console.log("DELETE:  " + id);
+    try{
+        const result = await db.deleteOne({"_id": new ObjectId(id)});
+        console.log(result);
+        res.send(result);
+    }catch(err){
         console.error(err);
     }
 })
