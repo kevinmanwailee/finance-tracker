@@ -22,7 +22,7 @@ function BasicMenu() {
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
       >
-        <AccountCircleIcon/>
+        <AccountCircleIcon fontSize="large"/>
       </IconButton>
       <Menu
         id="basic-menu"
@@ -49,7 +49,7 @@ export function Header(){
                 <div id="Title" style={{ paddingLeft:"25px", paddingRight:"25px", flexGrow: 2}}>
                     <h1 style={{ color:"gray" }}>Dashboard</h1>
                 </div>
-                <div id="Profile" style={{ alignItems:"center", padding:"20px" }}>
+                <div id="Profile" style={{ alignSelf:"center", paddingRight:"20px"}}>
                     <BasicMenu/>
                 </div>
             </div>

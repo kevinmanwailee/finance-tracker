@@ -1,10 +1,12 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { PermanentSidebar } from './PermanentSidebar.js';
 import { Header } from './Header.js';
 import { Stack } from '@mui/material';
-import { Button, TextField, MenuItem } from '@mui/material';
+import { Button, TextField, MenuItem, IconButton } from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -12,8 +14,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { List, ListItem, ListItemText } from '@mui/material';
 import  Grid from '@mui/material/Grid2';
-
-// TODO: Make Delete button functionality
 
 function NewTransaction(props) {
   const [open, setOpen] = useState(false);
@@ -29,10 +29,10 @@ function NewTransaction(props) {
 
   const categories = [
     {
-      value:'Income',
+      value:'Food',
     },
     {
-      value:'Food',
+      value:'Income',
     },
     {
       value:"Recreaction",
@@ -61,9 +61,6 @@ function NewTransaction(props) {
       >
         <DialogTitle>Add new transaction</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Test
-          </DialogContentText>
           <Stack>
             <Stack sx={{ paddingBottom:"30px" }}>
               <TextField
@@ -101,7 +98,7 @@ function NewTransaction(props) {
                 id="category"
                 name="category"
                 label="Category"
-                defaultValue="Income"
+                defaultValue="Food"
               >
                 {categories.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -124,19 +121,27 @@ function NewTransaction(props) {
 
 function App() {
   const [posts, setPosts] = useState([]);
-
+  const [monthText, setMonthText] = useState(dayjs().format('MMMM'));
+  const [monthNum, setMonthNum] = useState(dayjs().format('MM'));
+  const [year, setYear] = useState(dayjs().format('YYYY'));
   const URL = 'http://127.0.0.1:9000/';
 
-  let fetchData = useCallback(async () =>{
-    const res = await axios.get(URL+"transactions");
+  async function fetchData(){
+    // const res = await axios.get(URL+"transactions");
+    console.log("GET: " + monthNum + "/" + year);
+    const res = await axios.get(URL+"transactions/dateMY/"+ monthNum + "/" + year);
     if(res){
       setPosts(res.data)
     }
-  },[])
+  }
+
 
   useEffect(() => {
+    const day = dayjs(new Date(year, monthNum-1, 1));
+    setMonthText(day.format('MMMM'));
+    setMonthNum(monthNum);
     fetchData();
-  },[])
+  },[monthNum])
 
   async function deletePost(id){
     console.log(URL+"Delete/"+id);
@@ -160,6 +165,43 @@ function App() {
         console.log(error)
       })
   }
+  
+  function MonthSelector(){
+    const onClickLeft = () => {
+      var temp = monthNum;
+      if(temp !== 1 ){ temp = temp - 1; } 
+      else{ 
+        temp = 12;
+        setYear(year-1);
+      }
+      setMonthNum(temp);
+    };
+    const onClickRight = () => {
+      var temp = Number(monthNum);
+      if(temp !== 12 ){ temp = temp+1; } 
+      else{ 
+        temp = 1; 
+        setYear(Number(year)+1);
+      }
+      setMonthNum(temp);
+    };
+
+    return(
+      <Stack sx={{ flexDirection:"row", paddingLeft:"30px" }}>
+        <IconButton aria-label="left" 
+          disabled-color="primary"
+          onClick={onClickLeft}>
+          <ChevronLeftIcon/>
+        </IconButton>
+        <Button variant="text" color="disabled">{monthText}</Button>
+        <IconButton aria-label="left" 
+          disabled-color="primary"
+          onClick={onClickRight}>
+          <ChevronRightIcon/>
+        </IconButton>
+      </Stack>
+    )
+  }
 
   return (
     <div style={{ display:"flex", alignItems:"stretch"}}> 
@@ -174,7 +216,8 @@ function App() {
               <NewTransaction newPost={newPost}/>
             </div>
           </Stack>
-          <Stack sx={{ padding:"30px"}}>
+          <MonthSelector/>
+          <Stack sx={{ padding:"30px", paddingTop:"10px"}}>
             <Grid 
               container 
               spacing={4}
@@ -191,7 +234,7 @@ function App() {
                         <Grid size={2.5}>
                           <ListItemText>{post.date}</ListItemText>
                         </Grid>
-                        <Grid size={3}>
+                        <Grid size={4}>
                           <ListItemText>{post.title}</ListItemText>
                         </Grid>
                         <Grid size={3}>
@@ -201,7 +244,7 @@ function App() {
                           <ListItemText>{"$"+Number(post.price).toFixed(2)}</ListItemText>
                         </Grid>
                         <Grid size={1}>
-                          <Button variant="contained" onClick={() => deletePost(post._id)}>
+                          <Button variant="outlined" onClick={() => deletePost(post._id)}>
                             Delete
                           </Button>
                         </Grid>

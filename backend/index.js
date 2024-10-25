@@ -62,7 +62,11 @@ app.get('/transactions/title/:title', async(req,res)=>{
 
 // GET ALL - month/year
 app.get('/transactions/dateMY/:month/:year', async(req,res)=>{
-    let searchDate = req.params.month + "/" + req.params.year;
+    var currMonth = req.params.month;
+    if(currMonth.length == 1){
+        currMonth = "0"+currMonth;
+    }
+    let searchDate = currMonth + "/" + req.params.year;
     const result = await db.find().toArray();
 
     for(let i = 0; i < result.length; i++){
@@ -73,7 +77,6 @@ app.get('/transactions/dateMY/:month/:year', async(req,res)=>{
             i--; // fix index after removing element from array
         }
     }
-
     res.send(result);
 }) 
 
