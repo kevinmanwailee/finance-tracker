@@ -3,6 +3,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { PermanentSidebar } from './PermanentSidebar.js';
 import { Header } from './Header.js';
+import { Chart } from "react-google-charts";
 import { Stack } from '@mui/material';
 import { Button, TextField, MenuItem, IconButton } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -29,13 +30,13 @@ function NewTransaction(props) {
 
   const categories = [
     {
-      value:'Food',
-    },
-    {
       value:'Income',
     },
     {
-      value:"Recreaction",
+      value:'Food',
+    },
+    {
+      value:"Recreation",
     },
   ]
 
@@ -121,6 +122,7 @@ function NewTransaction(props) {
 
 function App() {
   const [posts, setPosts] = useState([]);
+  const [graph, setGraph] = useState([]);
   const [monthText, setMonthText] = useState(dayjs().format('MMMM'));
   const [monthNum, setMonthNum] = useState(dayjs().format('MM'));
   const [year, setYear] = useState(dayjs().format('YYYY'));
@@ -132,6 +134,11 @@ function App() {
     const res = await axios.get(URL+"transactions/dateMY/"+ monthNum + "/" + year);
     if(res){
       setPosts(res.data)
+      
+      const response = await axios.get(URL+"transactions/categoryArray/"+ monthNum + "/" + year);
+      if(response){
+        setGraph(response.data);
+      }
     }
   }
 
@@ -216,6 +223,14 @@ function App() {
               <NewTransaction newPost={newPost}/>
             </div>
           </Stack>
+          <Chart
+            chartType="PieChart"
+            data={graph}
+            options={{
+              title: "Placeholder",
+            }}
+            legendToggle
+          />
           <MonthSelector/>
           <Stack sx={{ padding:"30px", paddingTop:"10px"}}>
             <Grid 

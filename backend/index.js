@@ -80,6 +80,50 @@ app.get('/transactions/dateMY/:month/:year', async(req,res)=>{
     res.send(result);
 }) 
 
+// GET ALL - month/year categories array
+app.get('/transactions/categoryArray/:month/:year', async(req,res)=>{
+    var currMonth = req.params.month;
+    if(currMonth.length == 1){
+        currMonth = "0"+currMonth;
+    }
+    let searchDate = currMonth + "/" + req.params.year;
+    const result = await db.find().toArray();
+
+    var food = 0;
+    var income = 0;
+    var recreation = 0;
+
+    for(let i = 0; i < result.length; i++){
+        let currDate = (result[i].date);
+        currDate = currDate.substring(0, 3) + currDate.substring(6, currDate.length);
+        if(currDate != searchDate){
+            result.splice(i, 1)
+            i--; // fix index after removing element from array
+        } else{
+            console.log(result[i])
+            if(result[i].category === "Food"){
+                food = Number(food) + Number(result[i].price);
+                console.log("Food ++")
+            } else if(result[i].category === "Recreation"){
+                recreation = Number(recreation) + Number(result[i].price);
+                console.log("Rec ++")
+                console.log(result[i])
+            } else if(result[i].category === "Income"){
+                income = Number(income) + Number(result[i].price);
+                console.log("Income ++")
+            }
+        }
+    }
+
+
+    // PLACEHOLDER. CHANGE WHEN BUDGET IS ADDED
+    var budget = 500;
+    var remaining = budget - (food + recreation);
+    var tempResult = [["Category", "Amount"],['Food', food], ["Recreation", recreation], ["Income", income], ["Remaining", remaining]];
+    console.log(tempResult);
+    res.send(tempResult);
+}) 
+
 // PUT - Add post 
 app.put('/AddTransaction/', async(req,res)=>{
     try{
