@@ -8,7 +8,7 @@ import { Stack } from '@mui/material';
 import { Button, TextField, MenuItem, IconButton } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -18,26 +18,17 @@ import  Grid from '@mui/material/Grid2';
 
 function NewTransaction(props) {
   const [open, setOpen] = useState(false);
-
   const handleClickOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     setOpen(false);
   };
 
-
   const categories = [
-    {
-      value:'Income',
-    },
-    {
-      value:'Food',
-    },
-    {
-      value:"Recreation",
-    },
+    { value:'Income', },
+    { value:'Food', },
+    { value:"Recreation",},
   ]
 
   return (
@@ -128,6 +119,18 @@ function App() {
   const [year, setYear] = useState(dayjs().format('YYYY'));
   const URL = 'http://127.0.0.1:9000/';
 
+  const options ={
+    chart: {
+      title:"placeholder",
+      subtitle:"subtitle",
+    },
+    bars:"horizontal",
+    colors: ["lightBlue","lightGray"],  
+    width:"100%",
+    height: "300px",
+    legend: { position: "none" },
+  };
+
   async function fetchData(){
     // const res = await axios.get(URL+"transactions");
     console.log("GET: " + monthNum + "/" + year);
@@ -141,8 +144,6 @@ function App() {
       }
     }
   }
-
-
   useEffect(() => {
     const day = dayjs(new Date(year, monthNum-1, 1));
     setMonthText(day.format('MMMM'));
@@ -212,58 +213,55 @@ function App() {
 
   return (
     <div style={{ display:"flex", alignItems:"stretch"}}> 
-      <div id="Sidebar">
+      <Stack>
         <PermanentSidebar/>
-      </div>
+      </Stack>
       <Stack sx={{ display:"flex", flexGrow: 4, flexDirection:"column" }}>
         <Header/>
         <Stack>
           <Stack sx={{ alignItems:"center"}}>
-            <div>
-              <NewTransaction newPost={newPost}/>
-            </div>
+            <NewTransaction newPost={newPost}/>
           </Stack>
-          <Chart
-            chartType="PieChart"
-            data={graph}
-            options={{
-              title: "Placeholder",
-            }}
-            legendToggle
-          />
           <MonthSelector/>
+          <Stack sx={{ margin:"20px", padding:"20px", border:"1px solid lightGray"}}>
+            <Chart
+             chartType="Bar"
+             data={graph}
+              options={options}
+            />
+          </Stack>
           <Stack sx={{ padding:"30px", paddingTop:"10px"}}>
             <Grid 
-              container 
-              spacing={4}
-              sx={{ 
-                '--Grid-borderWidth': '1px',
-                border: 'var(--Grid-borderWidth) solid',
-                borderColor: 'divider'
-               }}
-              >
+            container 
+            spacing={4}
+            sx={{ 
+              '--Grid-borderWidth': '1px',
+              border: 'var(--Grid-borderWidth) solid',
+              borderColor: 'divider'
+             }}
+            >
               <Grid key="Transaction List" size={12}>
-                  <List dense>
-                    {posts.map(post =>
-                      <ListItem key={post._id}>
-                        <Grid size={2.5}>
-                          <ListItemText>{post.date}</ListItemText>
-                        </Grid>
-                        <Grid size={4}>
-                          <ListItemText>{post.title}</ListItemText>
-                        </Grid>
-                        <Grid size={3}>
-                          <ListItemText>{post.category}</ListItemText>
-                        </Grid>
-                        <Grid size={2}>
-                          <ListItemText>{"$"+Number(post.price).toFixed(2)}</ListItemText>
-                        </Grid>
-                        <Grid size={1}>
-                          <Button variant="outlined" onClick={() => deletePost(post._id)}>
-                            Delete
-                          </Button>
-                        </Grid>
-                      </ListItem>
+                <List dense>  
+                  {posts.map(post =>
+                    <ListItem key={post._id}>
+                      <Grid size={2.5}>
+                        <ListItemText>{post.date}</ListItemText>
+                      </Grid>
+                      <Grid size={4}>
+                        <ListItemText>{post.title}</ListItemText>
+                      </Grid>
+                      <Grid size={3}>
+                        <ListItemText>{post.category}</ListItemText>
+                      </Grid>
+                      <Grid size={2}>
+                        <ListItemText>{"$"+Number(post.price).toFixed(2)}</ListItemText>
+                      </Grid>
+                      <Grid size={1}>
+                        <Button variant="outlined" onClick={() => deletePost(post._id)}>
+                          Delete
+                        </Button>
+                      </Grid>
+                    </ListItem>
                     )}
                   </List>
               </Grid>

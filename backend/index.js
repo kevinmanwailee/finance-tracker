@@ -44,6 +44,7 @@ app.get('/transactions', async(req,res)=>{
     const result = await db.find().sort({date: -1}).toArray();
     res.send(result);
     console.log("GET ALL called");
+    console.log(result);
 })
 
 // GET ONE - id
@@ -96,31 +97,23 @@ app.get('/transactions/categoryArray/:month/:year', async(req,res)=>{
     for(let i = 0; i < result.length; i++){
         let currDate = (result[i].date);
         currDate = currDate.substring(0, 3) + currDate.substring(6, currDate.length);
-        if(currDate != searchDate){
-            result.splice(i, 1)
-            i--; // fix index after removing element from array
-        } else{
+        if(currDate === searchDate){
             console.log(result[i])
             if(result[i].category === "Food"){
                 food = Number(food) + Number(result[i].price);
-                console.log("Food ++")
             } else if(result[i].category === "Recreation"){
                 recreation = Number(recreation) + Number(result[i].price);
-                console.log("Rec ++")
                 console.log(result[i])
             } else if(result[i].category === "Income"){
                 income = Number(income) + Number(result[i].price);
-                console.log("Income ++")
             }
         }
     }
 
-
     // PLACEHOLDER. CHANGE WHEN BUDGET IS ADDED
-    var budget = 500;
-    var remaining = budget - (food + recreation);
-    var tempResult = [["Category", "Amount"],['Food', food], ["Recreation", recreation], ["Income", income], ["Remaining", remaining]];
-    console.log(tempResult);
+    var foodBudget = 100;
+    var tempResult = [["", "Amount", "Budget"],['Food', food, foodBudget], ["Recreation", recreation, foodBudget], ["Income", income, foodBudget]];
+    // console.log(tempResult);
     res.send(tempResult);
 }) 
 
