@@ -3,7 +3,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { PermanentSidebar } from './PermanentSidebar.js';
 import { Header } from './Header.js';
-import { Chart } from "react-google-charts";
+import { BarChart } from '@mui/x-charts/BarChart'
 import { Stack } from '@mui/material';
 import { Button, TextField, MenuItem, IconButton } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -27,7 +27,9 @@ function NewTransaction(props) {
 
   const categories = [
     { value:'Income', },
+    { value:'Bills', },
     { value:'Food', },
+    { value:'Subscriptions', },
     { value:"Recreation",},
   ]
 
@@ -119,18 +121,6 @@ function App() {
   const [year, setYear] = useState(dayjs().format('YYYY'));
   const URL = 'http://127.0.0.1:9000/';
 
-  const options ={
-    chart: {
-      title:"placeholder",
-      subtitle:"subtitle",
-    },
-    bars:"horizontal",
-    colors: ["lightBlue","lightGray"],  
-    width:"100%",
-    height: "300px",
-    legend: { position: "none" },
-  };
-
   async function fetchData(){
     // const res = await axios.get(URL+"transactions");
     console.log("GET: " + monthNum + "/" + year);
@@ -149,7 +139,7 @@ function App() {
     setMonthText(day.format('MMMM'));
     setMonthNum(monthNum);
     fetchData();
-  },[monthNum])
+  },[monthNum, year])
 
   async function deletePost(id){
     console.log(URL+"Delete/"+id);
@@ -174,7 +164,16 @@ function App() {
       })
   }
   
-  function MonthSelector(){
+  function MonthSelector(props){
+    const {
+      setOpen,
+      label,
+      id,
+      disabled,
+      InputProps: { ref } = {},
+      inputProps: { 'aria-label': ariaLabel } = {},
+    } = props;
+
     const onClickLeft = () => {
       var temp = monthNum;
       if(temp !== 1 ){ temp = temp - 1; } 
@@ -201,7 +200,18 @@ function App() {
           onClick={onClickLeft}>
           <ChevronLeftIcon/>
         </IconButton>
-        <Button variant="text" color="disabled">{monthText}</Button>
+        <Button 
+          variant="text"
+          color="disabled"
+          id={id}
+          disabled={disabled}
+          ref={ref}
+          aria-label={ariaLabel}
+          onClick={() => setOpen?.((prev) => !prev)}
+          sx={{width:"140px"}}
+          >          
+          {monthText + " " + year}
+        </Button>
         <IconButton aria-label="left" 
           disabled-color="primary"
           onClick={onClickRight}>
@@ -209,6 +219,29 @@ function App() {
         </IconButton>
       </Stack>
     )
+  }
+
+  function ButtonDatePicker(props, {monthNum, year}) {
+    const [open, setOpen] = React.useState(false);
+  
+    return (
+      <DatePicker
+        openTo="month"
+        views={['year', 'month']}
+        slots={{ ...props.slots, field: MonthSelector }}
+        slotProps={{ ...props.slotProps, field: { setOpen } }}
+        {...props}
+        open={open}
+        onClose={() => setOpen(false)}
+        onOpen={() => setOpen(true)}
+        onChange={(event)=>{
+          setYear(event["$y"])
+          setMonthNum(event["$M"]+1)
+        }}
+        
+      />
+      
+    );
   }
 
   return (
@@ -219,18 +252,30 @@ function App() {
       <Stack sx={{ display:"flex", flexGrow: 4, flexDirection:"column" }}>
         <Header/>
         <Stack>
-          <Stack sx={{ alignItems:"center"}}>
-            <NewTransaction newPost={newPost}/>
-          </Stack>
-          <MonthSelector/>
-          <Stack sx={{ margin:"20px", padding:"20px", border:"1px solid lightGray"}}>
-            <Chart
-             chartType="Bar"
-             data={graph}
-              options={options}
-            />
+          {/* <MonthSelector/> */}
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <ButtonDatePicker monthNum={this.monthNum} year={this.year}/>
+          </LocalizationProvider>
+          <Stack sx={{ margin:"20px", padding:"20px", border:"1px solid lightGray", minWidth:"95%", minHeight:"300px"}}>
+            <BarChart
+              yAxis={[{ 
+                scaleType:'band', 
+                dataKey: 'type',
+              }]}
+              xAxis={[{ tickMinStep:50}]}
+              dataset={[graph]}
+              series={[
+                { dataKey: 'Food', stack: 'Expenses', label:'Food', color:"lightCoral" },
+                { dataKey: 'Recreation', stack: 'Expenses', label:'Recreation', color:"lightblue"},
+                { dataKey: 'Remaining', stack: 'Remaining', label:'Remaining', color:"lightgray" },
+              ]}
+              layout="horizontal"
+              />
           </Stack>
           <Stack sx={{ padding:"30px", paddingTop:"10px"}}>
+            <Stack sx={{width:"200px", paddingBottom:"10px"}}>
+              <NewTransaction newPost={newPost}/>
+            </Stack>
             <Grid 
             container 
             spacing={4}

@@ -110,9 +110,8 @@ app.get('/transactions/categoryArray/:month/:year', async(req,res)=>{
         }
     }
 
-    // PLACEHOLDER. CHANGE WHEN BUDGET IS ADDED
-    var foodBudget = 100;
-    var tempResult = [["", "Amount", "Budget"],['Food', food, foodBudget], ["Recreation", recreation, foodBudget], ["Income", income, foodBudget]];
+    // PLACEHOLDER. CHANGE WHEN REMAINING IS ADDED
+    var tempResult = { type:'', Food:food, Recreation:recreation, Remaining:200};
     // console.log(tempResult);
     res.send(tempResult);
 }) 
