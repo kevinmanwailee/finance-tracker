@@ -44,16 +44,14 @@ function BasicMenu() {
 
 export function Header(){
     return(
-        <div>
-            <div id="Header" style={{ display:"flex", flexDirection:"row" }}>
-                <div id="Title" style={{ paddingLeft:"25px", paddingRight:"25px", flexGrow: 2}}>
-                    <h1 style={{ color:"gray" }}>Dashboard</h1>
-                </div>
-                <div id="Profile" style={{ alignSelf:"center", paddingRight:"20px"}}>
-                    <BasicMenu/>
-                </div>
-            </div>
-            <hr style={{ border: "1px solid lightgray" }}></hr>
+      <div id="Header" style={{ display:"flex", flexDirection:"row", backgroundColor:"#f1f1f1" }}>
+        <div id="Title" style={{ display:"flex", paddingLeft:"25px", paddingRight:"25px", flexGrow: 1}}>
+          <h1 style={{ color:"black" }}>Overview</h1>
         </div>
+        <div id="Profile" style={{ display:"flex", alignSelf:"center", marginRigth:"20px" , borderRadius:"50px"}}>
+          <BasicMenu />
+        </div>
+      </div>
+        
     )
 }

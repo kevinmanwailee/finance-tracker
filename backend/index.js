@@ -59,6 +59,32 @@ app.get('/transactions/title/:title', async(req,res)=>{
     const result = await db.find({"title":title}).toArray();
     res.send(result);
 })
+// GET ONE - total expense/income in a month
+app.get('/expenses/:month/:year', async(req,res)=>{
+    var currMonth = req.params.month;
+    if(currMonth.length == 1){
+        currMonth = "0"+currMonth;
+    }
+    let searchDate = currMonth + "/" + req.params.year;
+    const result = await db.find().toArray();
+    
+    var expenses = 0;
+    var income = 0;
+    for(let i = 0; i < result.length; i++){
+        let currDate = (result[i].date);
+        currDate = currDate.substring(0, 3) + currDate.substring(6, currDate.length);
+        if(currDate == searchDate){
+            if(result[i].category.localeCompare("Income")){
+                expenses += Number(result[i].price);
+            } else{
+                income += Number(result[i].price);
+            }
+        }
+    }
+    var remaining = income - expenses; 
+    var ret = ({"Expenses": "$"+ expenses, "Income": "$" +income, "Remaining": remaining});
+    res.send(ret);
+})
 
 // GET ALL - month/year
 app.get('/transactions/dateMY/:month/:year', async(req,res)=>{
@@ -69,14 +95,23 @@ app.get('/transactions/dateMY/:month/:year', async(req,res)=>{
     let searchDate = currMonth + "/" + req.params.year;
     const result = await db.find().toArray();
 
+    var expenses = 0;
+    var income = 0;
     for(let i = 0; i < result.length; i++){
         let currDate = (result[i].date);
         currDate = currDate.substring(0, 3) + currDate.substring(6, currDate.length);
         if(currDate != searchDate){
             result.splice(i, 1)
             i--; // fix index after removing element from array
+        }else{
+            if(result[i].category.localeCompare("Income")){
+                income += Number(result[i].price);
+            } else{
+                expenses += Number(result[i].price);
+            }
         }
     }
+    
     res.send(result);
 }) 
 

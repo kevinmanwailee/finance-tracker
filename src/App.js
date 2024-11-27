@@ -1,19 +1,23 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import PropTypes from "prop-types";
 import { PermanentSidebar } from './PermanentSidebar.js';
 import { Header } from './Header.js';
 import { Stack } from '@mui/material';
-import { Button, TextField, MenuItem, IconButton } from '@mui/material';
+import { Button, TextField, MenuItem, IconButton, Fab } from '@mui/material';
+import {LinearProgress, Box, Typography} from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { List, ListItem, ListItemText } from '@mui/material';
+import { List, ListItem, ListItemText, ListSubheader } from '@mui/material';
 import  Grid from '@mui/material/Grid2';
+import './App.css';
 
 function NewTransaction(props) {
   const [open, setOpen] = useState(false);
@@ -32,18 +36,18 @@ function NewTransaction(props) {
       value:'Food',
     },
     {
-      value:'Income',
+      value:"Recreaction",
     },
     {
-      value:"Recreaction",
+      value:'Income',
     },
   ]
 
   return (
     <React.Fragment>
-      <Button variant="contained" onClick={handleClickOpen}>
-        Add Transaction
-      </Button>
+      <Fab color='primary' aria-label="add" onClick={handleClickOpen} sx={{ top:"85%", left:"93%", position:"fixed" }}>
+        <AddIcon/>
+      </Fab>
       <Dialog
         open={open}
         onClose={handleClose}
@@ -120,21 +124,33 @@ function NewTransaction(props) {
 
 
 function App() {
+  // ASSUME BUDGET IS $2000
+  // TODO include a budget functionality
   const [posts, setPosts] = useState([]);
   const [monthText, setMonthText] = useState(dayjs().format('MMMM'));
   const [monthNum, setMonthNum] = useState(dayjs().format('MM'));
   const [year, setYear] = useState(dayjs().format('YYYY'));
+  const [totalExpenses, setTotalExpenses] = useState();
+  const [income, setIncome] = useState();
+  const [progress, setProgress] = useState(0);
   const URL = 'http://127.0.0.1:9000/';
 
   async function fetchData(){
     // const res = await axios.get(URL+"transactions");
-    console.log("GET: " + monthNum + "/" + year);
-    const res = await axios.get(URL+"transactions/dateMY/"+ monthNum + "/" + year);
+    console.log("GET: " +URL + "transactions/dateMY/"+ monthNum + "/" + year);
+    const res = await axios.get(URL + "transactions/dateMY/"+ monthNum + "/" + year);
     if(res){
       setPosts(res.data)
     }
+    // get expenses and income
+    console.log("GET: " +URL + "expenses/" + monthNum + "/" + year)
+    const resp = await axios.get(URL + "expenses/" + monthNum + "/" + year);
+    if(resp){
+      setTotalExpenses(resp.data.Expenses)
+      setIncome(resp.data.Income)
+      setProgress(Math.round(resp.data.Remaining/2000*100))
+    }
   }
-
 
   useEffect(() => {
     const day = dayjs(new Date(year, monthNum-1, 1));
@@ -165,6 +181,29 @@ function App() {
         console.log(error)
       })
   }
+
+  function LinearProgressWithLabel(props) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', mr: 1 }}>
+          <LinearProgress variant="determinate" {...props} />
+        </Box>
+        <Box sx={{ minWidth: 35 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {`${Math.round(props.value)}%`}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+  
+  LinearProgressWithLabel.propTypes = {
+    /**
+     * The value of the progress indicator for the determinate and buffer variants.
+     * Value between 0 and 100.
+     */
+    value: PropTypes.number.isRequired,
+  };
   
   function MonthSelector(){
     const onClickLeft = () => {
@@ -210,49 +249,122 @@ function App() {
       </div>
       <Stack sx={{ display:"flex", flexGrow: 4, flexDirection:"column" }}>
         <Header/>
+        <NewTransaction newPost={newPost}/>
         <Stack>
-          <Stack sx={{ alignItems:"center"}}>
-            <div>
-              <NewTransaction newPost={newPost}/>
-            </div>
-          </Stack>
           <MonthSelector/>
+          <Stack
+            sx={{ 
+            '--Grid-borderWidth': '1px',
+            border: 'var(--Grid-borderWidth) solid',
+            borderColor: 'divider',
+            borderRadius: '10px',
+            backgroundColor:"white",
+            margin:"30px",
+            marginTop:"10px",
+            marginBottom:"20px"
+            }}
+          >
+            <Box sx={{ 
+              width:"95%", 
+              alignSelf:"center", 
+              paddingBottom:"10px"
+              }}>
+              <List>
+                <ListSubheader sx={{color:'black'}}>Monthly Expenses</ListSubheader>
+              </List>
+              <LinearProgressWithLabel value={progress} />
+            </Box>
+          </Stack>
           <Stack sx={{ padding:"30px", paddingTop:"10px"}}>
-            <Grid 
-              container 
-              spacing={4}
-              sx={{ 
-                '--Grid-borderWidth': '1px',
-                border: 'var(--Grid-borderWidth) solid',
-                borderColor: 'divider'
-               }}
+            <Stack sx={{ flexDirection:"row" }}>
+              <Stack
+                  sx={{ 
+                    '--Grid-borderWidth': '1px',
+                    border: 'var(--Grid-borderWidth) solid',
+                    borderColor: 'divider',
+                    borderRadius: '10px',
+                    backgroundColor:"white",
+                    marginBottom:"20px",
+                    marginRight:"20px"
+                  }}
+                >
+                <List dense>
+                  <ListSubheader sx={{color:"Black"}}>Summary</ListSubheader>
+                  <ListItem>
+                    <Stack sx={{flexDirection:"row"}}>
+                      <ListItemText>Expenses</ListItemText>
+                      <ListItemText sx={{ paddingLeft:"100px", color:"red" }}>-{totalExpenses}</ListItemText>
+                    </Stack>
+                  </ListItem>
+                  <ListItem>
+                    <Stack sx={{flexDirection:"row"}}>
+                      <ListItemText>Income</ListItemText>
+                      <ListItemText sx={{ paddingLeft:"115px", color:"green" }}>{income}</ListItemText>
+                    </Stack>
+                  </ListItem>
+                </List>
+              </Stack>
+              <Stack
+                sx={{ 
+                  '--Grid-borderWidth': '1px',
+                  border: 'var(--Grid-borderWidth) solid',
+                  borderColor: 'divider',
+                  borderRadius: '10px',
+                  backgroundColor:"white",
+                  marginBottom:"20px",
+                  marginRight:"20px"
+                }}
               >
-              <Grid key="Transaction List" size={12}>
-                  <List dense>
-                    {posts.map(post =>
-                      <ListItem key={post._id}>
-                        <Grid size={2.5}>
-                          <ListItemText>{post.date}</ListItemText>
-                        </Grid>
-                        <Grid size={4}>
-                          <ListItemText>{post.title}</ListItemText>
-                        </Grid>
-                        <Grid size={3}>
-                          <ListItemText>{post.category}</ListItemText>
-                        </Grid>
-                        <Grid size={2}>
-                          <ListItemText>{"$"+Number(post.price).toFixed(2)}</ListItemText>
-                        </Grid>
-                        <Grid size={1}>
-                          <Button variant="outlined" onClick={() => deletePost(post._id)}>
-                            Delete
-                          </Button>
-                        </Grid>
-                      </ListItem>
-                    )}
-                  </List>
+                <List>
+                  <ListSubheader sx={{ color:"black" }}>This Month</ListSubheader>
+                    
+                  <ListItem>
+                    <ListItemText>Testasdfalskdjflk</ListItemText>
+                  </ListItem>
+                  
+                </List>
+              </Stack>
+            </Stack>
+            <Stack>
+              <Grid 
+                container 
+                spacing={4}
+                sx={{ 
+                  '--Grid-borderWidth': '1px',
+                  border: 'var(--Grid-borderWidth) solid',
+                  borderColor: 'divider',
+                  borderRadius: '10px',
+                  backgroundColor:"white"
+                }}
+                >
+                <Grid key="Transaction List" size={12}>
+                    <List dense>
+                      <ListSubheader sx={{color:'black'}}>Transactions</ListSubheader>
+                      {posts.map(post =>
+                        <ListItem key={post._id}>
+                          <Grid size={2.5}>
+                            <ListItemText>{post.date}</ListItemText>
+                          </Grid>
+                          <Grid size={4}>
+                            <ListItemText>{post.title}</ListItemText>
+                          </Grid>
+                          <Grid size={3}>
+                            <ListItemText>{post.category}</ListItemText>
+                          </Grid>
+                          <Grid size={2}>
+                            <ListItemText>{"$"+Number(post.price).toFixed(2)}</ListItemText>
+                          </Grid>
+                          <Grid size={1}>
+                            <Button variant="outlined" onClick={() => deletePost(post._id)}>
+                              Delete
+                            </Button>
+                          </Grid>
+                        </ListItem>
+                      )}
+                    </List>
+                </Grid>
               </Grid>
-            </Grid>
+            </Stack>
           </Stack>
         </Stack>
       </Stack>

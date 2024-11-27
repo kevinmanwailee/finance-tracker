@@ -24,7 +24,7 @@ export function PermanentSidebar() {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            backgroundColor: '#708090',
+            backgroundColor: '#252525',
             color:'white'
           },
         }}
